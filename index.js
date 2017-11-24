@@ -54,6 +54,17 @@ if(!argv.port) argv.port = 8088;
 server.listen(argv.port);
 console.log("Please open the link in your browser http://localhost:" + argv.port);
 
+blobService.listBlobsSegmented('apples-stockba56a77b-aca6-4506-a3cb-3f941c658cfb', null, function (error, results) {
+    if (error) {
+        // List blobs error
+    } else {
+        console.log(results.entries.length);
+        // for (var i = 0, blob; blob = results.entries[i]; i++) {
+        //     // Deal with blob object
+        // }
+    }
+});
+
 app.get('/files', function(req, res) {
  var currentDir =  dir;
  var query = req.query.path || '';
