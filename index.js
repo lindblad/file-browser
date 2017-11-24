@@ -54,57 +54,38 @@ if(!argv.port) argv.port = 8088;
 server.listen(argv.port);
 console.log("Please open the link in your browser http://localhost:" + argv.port);
 
-blobService.listBlobsSegmented('apples-stockba56a77b-aca6-4506-a3cb-3f941c658cfb', null, function (error, results) {
-    if (error) {
-        // List blobs error
-    } else {
-        console.log(results.entries.length);
-        // for (var i = 0, blob; blob = results.entries[i]; i++) {
-        //     // Deal with blob object
-        // }
-    }
-});
-
 app.get('/files', function(req, res) {
- var currentDir =  dir;
- var query = req.query.path || '';
- if (query) currentDir = path.join(dir, query);
- console.log("browsing ", currentDir);
- fs.readdir(currentDir, function (err, files) {
-     if (err) {
-        throw err;
+  var query = req.query.path || '';
+  currentDir = query;
+  console.log("browsing ", currentDir);
+
+  let prefix = `${query}`
+  let retVal = [];
+
+  blobService.listBlobsSegmentedWithPrefix('apples-stockba56a77b-aca6-4506-a3cb-3f941c658cfb', prefix, null, function (error, results) {
+      if (error) {
+          // List blobs error
+      } else {
+        let path = "";
+        let files = results.entries.reduce((prev, next) => {
+            prev.push(next.name.replace(prefix, ""));
+            return prev;
+          }, [])
+          .reduce((prev, next) => {
+            paht = next;
+            let isFolder = next.indexOf('/') >= 0;
+            let currentLevel = isFolder ? next.substr(0, next.indexOf('/')) : next;
+            let hasIt = prev.some(it => {
+              return it.Name === currentLevel;
+            });
+            if (hasIt) {
+              return prev;
+            }
+            prev.push({ Name : currentLevel, IsDirectory: isFolder, Path : isFolder ? `${prefix}${currentLevel}/` : next  });
+            return prev;
+          }, []);
+        res.json(files);
       }
-      var data = [];
-      files
-      .filter(function (file) {
-          return true;
-      })
-      .forEach(function (file) {
-        try {
-                //console.log("processing ", file);
-                var isDirectory = fs.statSync(path.join(currentDir,file)).isDirectory();
-                if (isDirectory) {
-                  data.push({ Name : file, IsDirectory: true, Path : path.join(query, file)  });
-                } else {
-                  var ext = path.extname(file);
-                  if(argv.exclude && _.contains(argv.exclude, ext)) {
-                    console.log("excluding file ", file);
-                    return;
-                  }
-                  else if(argv.include && !_.contains(argv.include, ext)) {
-                    console.log("not including file", file);
-                    return;
-                  }
-                  data.push({ Name : file, Ext : ext, IsDirectory: false, Path : path.join(query, file) });
-                }
-
-        } catch(e) {
-          console.log(e);
-        }
-
-      });
-      data = _.sortBy(data, function(f) { return f.Name });
-      res.json(data);
   });
 });
 
