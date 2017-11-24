@@ -7,6 +7,7 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 var azureStorage = require('azure-storage');
+var blobService = azureStorage.createBlobService();
 var sasKey = "https://ne1dnvgltstgcus0000f.blob.core.windows.net/apples-stockba56a77b-aca6-4506-a3cb-3f941c658cfb?sv=2017-04-17&sr=c&sig=RBymCBy%2B7JwPmRFwq%2Fnv8jy48J3qQtYa4e9qUlXo%2BVc%3D&st=2017-11-24T14%3A47%3A11Z&se=2018-05-23T15%3A46%3A42Z&sp=rwdl";
 
 var argv = require('yargs')
